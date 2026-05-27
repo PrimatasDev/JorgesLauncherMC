@@ -4,6 +4,7 @@ use std::io;
 use std::path::Path;
 use std::path::PathBuf;
 
+//$ ───▶ Obter diretórios do APP ◀──────────────────────────────────────
 pub fn get_app_dir<P: AsRef<Path>>(sub_path: P) -> io::Result<PathBuf> {
     //% Obter diretório do usuário
     let user_dir = UserDirs::new().ok_or_else(|| {
@@ -28,7 +29,9 @@ pub fn get_app_dir<P: AsRef<Path>>(sub_path: P) -> io::Result<PathBuf> {
     let final_dir = base_dir.join(sub_path);
 
     //% Se não existir, crie
-    fs::create_dir_all(&final_dir)?;
+    if let Some(parent) = final_dir.parent() {
+        fs::create_dir_all(parent)?;
+    }
 
     Ok(final_dir)
 }
