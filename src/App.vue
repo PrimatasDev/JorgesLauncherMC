@@ -4,7 +4,7 @@ import { ref } from "vue";
 import Titlebar from "./components/Titlebar.vue";
 import Bottombar from "./components/Bottombar.vue";
 
-import SettingsModal from "./components/SettingsModal.vue";
+import OptionsModal from "./components/OptionsModal.vue";
 import AccountsModal from "./components/AccountsModal.vue";
 
 import background from "./assets/img/background.png";
@@ -31,7 +31,7 @@ document.addEventListener(
     </div>
   </div>
 
-  <SettingsModal :is-open="isSettingsOpen" @close="isSettingsOpen = false" />
+  <OptionsModal :is-open="isSettingsOpen" @close="isSettingsOpen = false" />
   <AccountsModal :is-open="isAccountsOpen" @close="isAccountsOpen = false" />
 
   <Bottombar

@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import CloseIcon from "../assets/ui_icons/CloseIcon.vue";
 
+import { ref } from "vue";
+
 defineProps<{
   isOpen: boolean;
 }>();
@@ -8,30 +10,37 @@ defineProps<{
 const emit = defineEmits<{
   (e: "close"): void;
 }>();
+
+const memoryOptions = ["4GB", "5GB", "6GB", "8GB"];
+
+const selectedMemory = ref("4GB");
 </script>
 
 <template>
   <div v-if="isOpen" class="modal-overlay" @click.self="emit('close')">
     <div class="modal-content">
-      <div class="modal-header">
-        <h2>Configurações do Launcher</h2>
+      <div class="modal-header" data-tauri-drag-region>
+        <h2>Opções do launcher</h2>
         <button class="close-btn" @click="emit('close')">
           <CloseIcon />
         </button>
       </div>
       <div class="modal-body">
-        <!-- Placeholder configuration options -->
-        <div class="settings-group">
-          <label>Memória RAM Máxima (MB)</label>
-          <input type="number" value="4096" />
+        <!-- % Área de memória -->
+        <div class="body-section">
+          <span>Quantidade de Memória:</span>
+          <div class="section-body">
+            <button
+              v-for="memory in memoryOptions"
+              :key="memory"
+              class="memory-btn"
+              :class="{ selected: selectedMemory === memory }"
+              @click="selectedMemory = memory"
+            >
+              {{ memory }}
+            </button>
+          </div>
         </div>
-        <div class="settings-group">
-          <label>Caminho do Java (Opcional)</label>
-          <input type="text" placeholder="Caminho para o javaw.exe" />
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button class="save-btn" @click="emit('close')">Salvar</button>
       </div>
     </div>
   </div>
@@ -54,8 +63,10 @@ const emit = defineEmits<{
 .modal-content {
   background-color: $header-background;
   border-radius: 12px;
-  width: 500px;
+  width: 450px;
   max-width: 90%;
+  height: 250px;
+  max-height: 90%;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
   display: flex;
   flex-direction: column;
@@ -67,7 +78,7 @@ const emit = defineEmits<{
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 15px 20px;
+  padding: 5px 15px;
   background-color: color.adjust($header-background, $lightness: -2%);
   border-bottom: 1px solid color.adjust($header-background, $lightness: 5%);
 
@@ -75,7 +86,7 @@ const emit = defineEmits<{
     color: white;
     font-size: 1.2rem;
     font-weight: 700;
-    font-family: "Lato", sans-serif;
+    pointer-events: none;
   }
 
   .close-btn {
@@ -105,60 +116,66 @@ const emit = defineEmits<{
 }
 
 .modal-body {
-  padding: 20px;
+  padding: 15px;
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 20px;
 
-  .settings-group {
+  > .body-section {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 15px;
+    align-items: center;
+    justify-content: center;
 
-    label {
-      color: #ccc;
-      font-size: 0.9rem;
-      font-family: "Lato", sans-serif;
+    > span {
+      color: rgb(129, 126, 126);
+      font-size: 1.1rem;
     }
 
-    input {
-      background-color: $main-background;
-      border: 1px solid color.adjust($header-background, $lightness: 15%);
-      border-radius: 6px;
-      padding: 10px 12px;
-      color: white;
-      font-size: 1rem;
-      font-family: "Lato", sans-serif;
-      outline: none;
+    .section-body {
+      display: flex;
+      flex-direction: row;
+      gap: 10px;
+      justify-content: center;
+      align-items: center;
 
-      &:focus {
-        border-color: #64b5f6;
+      > .memory-btn {
+        background-color: transparent;
+        border: 1px solid color.adjust($header-background, $lightness: 30%);
+        color: white;
+        padding: 12px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-family: "Lato", sans-serif;
+        transition: all 0.2s;
+
+        &:hover {
+          background-color: color.adjust($main-background, $lightness: 5%);
+          border-color: white;
+        }
+      }
+
+      > .memory-btn.selected {
+        background-color: color.adjust($main-background, $lightness: 5%);
+        border-color: white;
       }
     }
   }
-}
 
-.modal-footer {
-  padding: 15px 20px;
-  display: flex;
-  justify-content: flex-end;
-  background-color: color.adjust($header-background, $lightness: -2%);
-  border-top: 1px solid color.adjust($header-background, $lightness: 5%);
-
-  .save-btn {
-    background-color: #4caf50;
+  .add-account-btn {
+    background-color: transparent;
+    border: 1px dashed color.adjust($header-background, $lightness: 30%);
     color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 6px;
-    font-weight: bold;
-    font-size: 1rem;
+    padding: 12px;
+    border-radius: 8px;
     cursor: pointer;
     font-family: "Lato", sans-serif;
-    transition: background-color 0.2s;
+    transition: all 0.2s;
 
     &:hover {
-      background-color: #43a047;
+      background-color: color.adjust($main-background, $lightness: 5%);
+      border-color: white;
     }
   }
 }
