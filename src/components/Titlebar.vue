@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import CloseWindowIcon from "../assets/Icons/CloseWindowIcon.vue";
-import MinimizeWindowIcon from "../assets/Icons/MinimizeWindowIcon.vue";
+import CloseIcon from "../assets/ui_icons/CloseIcon.vue";
+import MinimizeIcon from "../assets/ui_icons/MinimizeIcon.vue";
 
 const appWindow = getCurrentWindow();
 const minimizeWindow = () => appWindow.minimize();
@@ -11,24 +11,19 @@ const closeWindow = () => appWindow.close();
 <template>
   <header class="app-titlebar">
     <div class="header-content" data-tauri-drag-region>
-      <nav class="account-actions">
-        <button class="account-btn">
-          <div class="account-icon-area">
-            <CloseWindowIcon />
-          </div>
-          <div class="account-name-area">
-            <span>User</span>
-          </div>
-        </button>
-      </nav>
+      <div class="title-area">
+        <span>Jorges Launcher MC</span>
+      </div>
 
       <nav class="control-window">
-        <button class="minimize-btn" @click="minimizeWindow">
-          <MinimizeWindowIcon />
+        <!-- $ ───▶ Minimizar Janela ◀────────────────────────────────────── -->
+        <button class="generic-btn" @click="minimizeWindow" title="Minimizar">
+          <MinimizeIcon />
         </button>
 
-        <button class="close-btn" @click="closeWindow">
-          <CloseWindowIcon />
+        <!-- $ ───▶ Fechar Janela ◀────────────────────────────────────── -->
+        <button class="close-btn" @click="closeWindow" title="Fechar">
+          <CloseIcon />
         </button>
       </nav>
     </div>
@@ -51,75 +46,17 @@ const closeWindow = () => appWindow.close();
     width: 100%;
     height: 100%;
 
-    > .account-actions {
-      display: flex;
-      flex-direction: row;
-      justify-content: end;
-      align-items: center;
-      pointer-events: none;
+    .title-area {
+      width: 100%;
       height: 100%;
-
-      > button {
-        width: 150px;
-        height: 40px;
-        pointer-events: auto;
-        background-color: transparent;
-        border: none;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: start;
-        overflow: hidden;
-
-        > .account-icon-area {
-          width: 40px;
-          height: 40px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          border-radius: 50%;
-        }
-
-        > .account-name-area {
-          font-size: 1.1rem;
-          color: white;
-          display: flex;
-          align-items: center;
-          justify-content: start;
-          width: auto;
-          height: 40px;
-        }
-      }
-
-      > .account-btn {
-        > .account-icon-area {
-          width: 40px;
-          height: 40px;
-
-          > svg {
-            fill: color.adjust(white, $lightness: -20%);
-            width: 16px;
-            height: 18px;
-          }
-        }
-
-        &:hover {
-          background-color: $btn-hover-background;
-        }
-
-        &:active {
-          background-color: color.adjust($btn-hover-background, $lightness: 5%);
-        }
-
-        &:hover,
-        &:active {
-          > .account-icon-area {
-            > svg {
-              fill: color.adjust(white, $lightness: -20%);
-            }
-          }
-        }
-      }
+      display: flex;
+      justify-content: start;
+      align-items: center;
+      color: rgb(87, 87, 87);
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      padding: 0 0 0 10px;
+      font-weight: 500;
+      pointer-events: none;
     }
 
     > .control-window {
@@ -143,11 +80,11 @@ const closeWindow = () => appWindow.close();
         overflow: hidden;
       }
 
-      > .minimize-btn {
+      > .generic-btn {
         > svg {
           fill: color.adjust(white, $lightness: -20%);
-          width: 16px;
-          height: 18px;
+          width: 20px;
+          height: 20px;
         }
 
         &:hover {
@@ -169,8 +106,8 @@ const closeWindow = () => appWindow.close();
       > .close-btn {
         > svg {
           fill: color.adjust(white, $lightness: -20%);
-          width: 14px;
-          height: 14px;
+          width: 20px;
+          height: 20px;
         }
 
         &:hover {

@@ -2,6 +2,8 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  user-select: none;
+  font-family: "Lato", sans-serif;
 }
 
 html,
@@ -16,4 +18,8 @@ body,
   border: none;
   cursor: default;
   background-color: transparent;
+}
+
+img {
+  -webkit-user-drag: none;
 }

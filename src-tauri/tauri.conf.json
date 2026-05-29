@@ -13,8 +13,8 @@
     "windows": [
       {
         "title": "Jorges Launcher MC",
-        "width": 600,
-        "height": 400,
+        "width": 500,
+        "height": 300,
         "resizable": false,
         "fullscreen": false,
         "maximizable": false,
