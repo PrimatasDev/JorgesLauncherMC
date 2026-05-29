@@ -7,9 +7,10 @@ use std::io;
 use std::path::Path;
 use std::path::PathBuf;
 
-//$ ───▶ Obter pasta raiz do launcher ◀──────────────────────────────────────
-/// Obter pasta raiz do APP
-pub fn get_app_root_dir() -> io::Result<PathBuf> {
+//& ───▶ Métodos privados ◀──────────────────────────────────────
+//$ Obter o diretório da raiz do aplicativo
+/// Obter diretório raiz do aplicativo
+fn get_app_root_dir() -> io::Result<PathBuf> {
     //% Obter o diretório "USER" do computador
     let user_dir = UserDirs::new().ok_or_else(|| {
         io::Error::new(
@@ -33,17 +34,56 @@ pub fn get_app_root_dir() -> io::Result<PathBuf> {
     Ok(root_dir)
 }
 
-//$ ───▶ Criar diretórios para o APP ◀──────────────────────────────────────
-/// Criar ou obter um diretório dentro da pasta raiz do jogo
-pub fn get_or_create_dir<P: AsRef<Path>>(sub_path: P) -> io::Result<PathBuf> {
-    //% Obter pasta do APP
+//$ Obtém ou cria um diretório dentro da raiz do aplicativo
+/// Obter ou criar diretórios na raiz do aplicativo
+fn get_or_create_dir<P: AsRef<Path>>(sub_path: P) -> io::Result<PathBuf> {
+    //% Obter diretório "JorgesLMC" do computador
     let app_dir = get_app_root_dir()?;
 
-    //% Obter sub pasta dentro da pasta do aplicativo
+    //% Adicionar subdiretório dentro do diretório do app
     let sub_dir = app_dir.join(sub_path);
 
-    //% Se não existir, crie
+    //% Criar ou obter o diretório
     fs::create_dir_all(&sub_dir)?;
 
+    //% Retornar o diretório
     Ok(sub_dir)
+}
+
+//& ───▶ Métodos públicos ◀──────────────────────────────────────
+//$ Pega o diretório padrão do aplicativo "JorgesLMC"
+/// Obter diretório padrão do aplicativo "JorgesLMC"
+///
+/// Retorna o caminho completo (`PathBuf`) do diretório.
+///
+/// # Erros
+///
+/// Retorna um `io::Error` se não for possível determinar a pasta usuários ou documentos do sistema
+/// ou se falhar ao criar o diretório no sistema de arquivos.
+pub fn get_root_dir() -> io::Result<PathBuf> {
+    get_app_root_dir()
+}
+
+//$ Pega o diretório "INSTANCE" do aplicativo
+/// Obter diretório "instance" na raiz do aplicativo
+///
+/// Retorna o caminho completo (`PathBuf`) do diretório.
+///
+/// # Erros
+///
+/// Retorna um `io::Error` se falhar ao criar o diretório no sistema de arquivos.
+pub fn get_instance_dir() -> io::Result<PathBuf> {
+    get_or_create_dir("instance")
+}
+
+//$ Pega o diretório "BIN" do aplicativo
+/// Obter diretório "bin" na raiz do aplicativo
+///
+/// Retorna o caminho completo (`PathBuf`) do diretório.
+///
+/// # Erros
+///
+/// Retorna um `io::Error` se falhar ao criar o diretório no sistema de arquivos.
+pub fn get_bin_dir() -> io::Result<PathBuf> {
+    get_or_create_dir("bin")
 }

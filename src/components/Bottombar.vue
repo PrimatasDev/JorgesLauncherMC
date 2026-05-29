@@ -13,7 +13,7 @@ const emit = defineEmits<{
 
 async function openInstanceFolder() {
   try {
-    await invoke("open_instance_folder");
+    await invoke("open_instance_dir");
     console.log("Pasta instance aberta com sucesso!");
   } catch (error) {
     console.log(`Ocorreu um erro: ${error}`);

@@ -1,19 +1,65 @@
 <script setup lang="ts">
+import { ref, onMounted, watch } from "vue";
 import CloseIcon from "../assets/ui_icons/CloseIcon.vue";
 
-import { ref } from "vue";
+import {
+  loadLauncherConfigs,
+  saveLauncherConfigs,
+} from "../utils/configManager";
 
-defineProps<{
-  isOpen: boolean;
-}>();
+const props = defineProps<{ isOpen: boolean }>();
+const emit = defineEmits<{ (e: "close"): void }>();
 
-const emit = defineEmits<{
-  (e: "close"): void;
-}>();
+const memoryOptions = ["5GB", "6GB", "8GB"] as const;
+type MemoryType = (typeof memoryOptions)[number];
 
-const memoryOptions = ["4GB", "5GB", "6GB", "8GB"];
+const memoryValues: Record<MemoryType, number> = {
+  "5GB": 5120,
+  "6GB": 6144,
+  "8GB": 8192,
+};
 
-const selectedMemory = ref("4GB");
+const selectedMemory = ref<MemoryType>("5GB");
+
+//% Busca e mapeia o valor da memória vindo do JSON
+async function fetchConfigs() {
+  const configs = await loadLauncherConfigs();
+
+  const foundMatch = (Object.keys(memoryValues) as MemoryType[]).find(
+    (key) => memoryValues[key] === configs.game_memory,
+  );
+
+  if (foundMatch) {
+    selectedMemory.value = foundMatch;
+  } else {
+    console.warn(
+      `Valor de memória no JSON (${configs.game_memory}) não mapeado no Vue.`,
+    );
+  }
+}
+
+//% Salva a memória de forma isolada
+async function changeMemory(memory: MemoryType) {
+  selectedMemory.value = memory;
+  const numValue = memoryValues[memory];
+
+  //% Envia apenas o dado alterado. O configManager mantém o username atual intacto
+  const success = await saveLauncherConfigs({ game_memory: numValue });
+
+  if (success) {
+    console.log(`Configuração salva: ${memory} (${numValue}MB)`);
+  }
+}
+
+watch(
+  () => props.isOpen,
+  (isOpenNow) => {
+    if (isOpenNow) fetchConfigs();
+  },
+);
+onMounted(() => {
+  if (props.isOpen) fetchConfigs();
+});
 </script>
 
 <template>
@@ -35,7 +81,7 @@ const selectedMemory = ref("4GB");
               :key="memory"
               class="memory-btn"
               :class="{ selected: selectedMemory === memory }"
-              @click="selectedMemory = memory"
+              @click="changeMemory(memory)"
             >
               {{ memory }}
             </button>
@@ -160,22 +206,6 @@ const selectedMemory = ref("4GB");
         background-color: color.adjust($main-background, $lightness: 5%);
         border-color: white;
       }
-    }
-  }
-
-  .add-account-btn {
-    background-color: transparent;
-    border: 1px dashed color.adjust($header-background, $lightness: 30%);
-    color: white;
-    padding: 12px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-family: "Lato", sans-serif;
-    transition: all 0.2s;
-
-    &:hover {
-      background-color: color.adjust($main-background, $lightness: 5%);
-      border-color: white;
     }
   }
 }

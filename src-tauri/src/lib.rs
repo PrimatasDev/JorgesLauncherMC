@@ -5,19 +5,20 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .setup(|_app| {
-            //% Criar diretório padrão do app
-            if let Err(e) = core::get_app_root_dir() {
-                eprintln!("Erro ao inicializar diretório padrão. \n ERRO: {}", e);
-            }
-            
-            //% Carregar configurações
-            if let Err(e) = core::load_configs() {
-                eprintln!("Erro ao carregar configurações padrão do launcher. \n ERRO: {}", e);
-            }
+            //% Criar diretório padrão
+            core::get_root_dir().map_err(|e| format!("Erro no diretório: {}", e))?;
+
+            //% Criar configurações padrão caso não existam
+            core::create_configs().map_err(|e| format!("Erro ao criar cfgs: {}", e))?;
+
+            //% Carregar configurações existentes
+            core::load_configs().map_err(|e| format!("Erro ao carregar cfgs: {}", e))?;
+
+            //% Retornar OK ao final de tudo
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
-            core::tauri_commands::open_instance_folder,
+            core::tauri_commands::open_instance_dir,
             core::tauri_commands::save_launcher_configs,
         ])
         .run(tauri::generate_context!())

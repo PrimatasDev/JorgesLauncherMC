@@ -1,40 +1,83 @@
 <script setup lang="ts">
+import { ref, onMounted, watch } from "vue";
 import CloseIcon from "../assets/ui_icons/CloseIcon.vue";
-import UserIcon from "../assets/ui_icons/UserIcon.vue";
+import { validateUsername, sanitizeUsernameInput } from "../utils/validators";
+// Importa o gerenciador unificado
+import {
+  loadLauncherConfigs,
+  saveLauncherConfigs,
+} from "../utils/configManager";
 
-defineProps<{
-  isOpen: boolean;
-}>();
+const props = defineProps<{ isOpen: boolean }>();
+const emit = defineEmits<{ (e: "close"): void }>();
 
-const emit = defineEmits<{
-  (e: "close"): void;
-}>();
+const username = ref("");
+
+//% Busca apenas o que interessa para este modal
+async function loadSavedUsername() {
+  const configs = await loadLauncherConfigs();
+  username.value = configs.username;
+}
+
+function handleInput(event: Event) {
+  const target = event.target as HTMLInputElement;
+  username.value = sanitizeUsernameInput(target.value);
+}
+
+//% Salva o nome de usuário isoladamente de forma segura
+async function saveUsername() {
+  if (!validateUsername(username.value)) {
+    alert(
+      "O nome de usuário deve ter entre 3 e 16 caracteres e conter apenas letras, números e '_'!",
+    );
+    return;
+  }
+
+  // O configManager vai cuidar de manter a memória atual intacta lá dentro
+  const success = await saveLauncherConfigs({ username: username.value });
+
+  if (success) {
+    console.log(`Usuário definido com sucesso: ${username.value}`);
+    emit("close");
+  }
+}
+
+watch(
+  () => props.isOpen,
+  (isOpenNow) => {
+    if (isOpenNow) loadSavedUsername();
+  },
+);
+onMounted(() => {
+  if (props.isOpen) loadSavedUsername();
+});
 </script>
 
 <template>
   <div v-if="isOpen" class="modal-overlay" @click.self="emit('close')">
     <div class="modal-content">
-      <div class="modal-header">
-        <h2>Contas Minecraft</h2>
+      <div class="modal-header" data-tauri-drag-region>
+        <h2>Entrar como</h2>
         <button class="close-btn" @click="emit('close')">
           <CloseIcon />
         </button>
       </div>
       <div class="modal-body">
-        <div class="accounts-list">
-          <!-- Placeholder for accounts -->
-          <div class="account-item active">
-            <div class="account-avatar">
-              <UserIcon />
-            </div>
-            <div class="account-details">
-              <span class="account-name">Steve (Padrão)</span>
-              <span class="account-type">Offline</span>
-            </div>
+        <!-- % Área de conta -->
+        <div class="body-section">
+          <!-- ! ADICIONAR CONTA DESCARTADO (POR ENQUANTO) -->
+          <!-- @ <Button class="add-account-btn">Adicionar Conta</Button> -->
+          <!-- <br /> -->
+          <div class="section-body">
+            <input
+              class="username-input"
+              type="text"
+              placeholder="Nome de usuário"
+              maxlength="16"
+            />
+            <Button class="define-name-btn">Definir</Button>
           </div>
         </div>
-
-        <button class="add-account-btn">Adicionar Nova Conta</button>
       </div>
     </div>
   </div>
@@ -59,6 +102,8 @@ const emit = defineEmits<{
   border-radius: 12px;
   width: 450px;
   max-width: 90%;
+  height: 250px;
+  max-height: 90%;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
   display: flex;
   flex-direction: column;
@@ -70,7 +115,7 @@ const emit = defineEmits<{
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 15px 20px;
+  padding: 5px 15px;
   background-color: color.adjust($header-background, $lightness: -2%);
   border-bottom: 1px solid color.adjust($header-background, $lightness: 5%);
 
@@ -78,7 +123,7 @@ const emit = defineEmits<{
     color: white;
     font-size: 1.2rem;
     font-weight: 700;
-    font-family: "Lato", sans-serif;
+    pointer-events: none;
   }
 
   .close-btn {
@@ -108,83 +153,71 @@ const emit = defineEmits<{
 }
 
 .modal-body {
-  padding: 20px;
+  padding: 15px;
   display: flex;
   flex-direction: column;
   gap: 20px;
 
-  .accounts-list {
+  > .body-section {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 15px;
+    align-items: center;
+    justify-content: center;
 
-    .account-item {
+    .section-body {
+      width: 100%;
       display: flex;
+      flex-direction: column;
+      gap: 10px;
+      justify-content: center;
       align-items: center;
-      gap: 15px;
-      background-color: $main-background;
-      padding: 10px 15px;
-      border-radius: 8px;
-      border: 1px solid color.adjust($header-background, $lightness: 15%);
-      cursor: pointer;
-      transition: background-color 0.2s;
 
-      &:hover {
-        background-color: color.adjust($main-background, $lightness: 5%);
-      }
+      > .username-input {
+        width: 100%;
+        height: 50px;
+        background-color: transparent;
+        border: 1px solid color.adjust($header-background, $lightness: 30%);
+        color: white;
+        padding: 12px;
+        border-radius: 8px;
+        cursor: text;
+        font-family: "Lato", sans-serif;
+        transition: all 0.2s;
+        font-size: 1rem;
 
-      &.active {
-        border-color: #64b5f6;
-      }
+        &:hover {
+          background-color: color.adjust($main-background, $lightness: 5%);
+          border-color: white;
+        }
 
-      .account-avatar {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        background-color: color.adjust($main-background, $lightness: 10%);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-
-        svg {
-          width: 24px;
-          height: 24px;
-          fill: #ccc;
+        &:focus {
+          background-color: color.adjust($main-background, $lightness: 10%);
         }
       }
 
-      .account-details {
-        display: flex;
-        flex-direction: column;
+      > .define-name-btn {
+        width: 100%;
+        height: 50px;
+        background-color: transparent;
+        border: 1px solid color.adjust($header-background, $lightness: 30%);
+        color: white;
+        padding: 12px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-family: "Lato", sans-serif;
+        transition: all 0.2s;
+        font-size: 1rem;
 
-        .account-name {
-          color: white;
-          font-weight: bold;
-          font-family: "Lato", sans-serif;
+        &:hover {
+          background-color: color.adjust($main-background, $lightness: 5%);
+          border-color: white;
         }
 
-        .account-type {
-          color: #aaa;
-          font-size: 0.85rem;
-          font-family: "Lato", sans-serif;
+        &:active {
+          background-color: color.adjust($main-background, $lightness: 10%);
         }
       }
-    }
-  }
-
-  .add-account-btn {
-    background-color: transparent;
-    border: 1px dashed color.adjust($header-background, $lightness: 30%);
-    color: white;
-    padding: 12px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-family: "Lato", sans-serif;
-    transition: all 0.2s;
-
-    &:hover {
-      background-color: color.adjust($main-background, $lightness: 5%);
-      border-color: white;
     }
   }
 }
