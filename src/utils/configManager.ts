@@ -1,3 +1,4 @@
+import { ref } from "vue";
 import { invoke } from "@tauri-apps/api/core";
 
 export interface LauncherOptions {
@@ -5,44 +6,46 @@ export interface LauncherOptions {
   username: string;
 }
 
+// ESTADO GLOBAL REATIVO
+export const currentConfigs = ref<LauncherOptions>({
+  game_memory: 5120,
+  username: "Steve",
+});
+
 /**
- * Carrega as configurações atuais do arquivo JSON através do Rust.
- * Retorna um objeto com as opções ou valores padrão em caso de erro.
+ * Carrega as configurações atuais do arquivo JSON através do Rust e atualiza o estado reativo.
  */
 export async function loadLauncherConfigs(): Promise<LauncherOptions> {
   try {
     const configs = await invoke<LauncherOptions>("load_launcher_configs");
+    currentConfigs.value = configs;
     return configs;
   } catch (error) {
     console.error("Erro ao carregar configurações do Rust:", error);
-    return {
-      game_memory: 5120,
-      username: "Steve",
-    };
+    return currentConfigs.value;
   }
 }
 
 /**
- * Salva as configurações completas no arquivo JSON através do Rust.
- * Aceita atualizações parciais combinando com os valores antigos para não perder dados.
+ * Salva as configurações completas no arquivo JSON através do Rust e atualiza o estado reativo.
  */
 export async function saveLauncherConfigs(
   options: Partial<LauncherOptions>,
 ): Promise<boolean> {
   try {
-    // 1. Primeiro, busca o estado atual para garantir que não vamos apagar o outro campo
-    const currentConfigs = await loadLauncherConfigs();
-
-    // 2. Mescla o que já existia com a nova alteração (ex: mantém o username se só alterou a memória)
+    // Mescla o valor antigo com a nova alteração
     const mergedOptions: LauncherOptions = {
-      ...currentConfigs,
+      ...currentConfigs.value,
       ...options,
     };
 
-    // 3. Envia o objeto completo estruturado para o Rust
+    // Envia para o Rust salvar no arquivo físico
     await invoke("save_launcher_configs", {
       options: mergedOptions,
     });
+
+    // Atualiza o estado global na memória instantaneamente
+    currentConfigs.value = mergedOptions;
 
     return true;
   } catch (error) {

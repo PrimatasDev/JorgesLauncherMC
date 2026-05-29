@@ -18,6 +18,7 @@ pub fn run() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
+            core::tauri_commands::load_launcher_configs,
             core::tauri_commands::open_instance_dir,
             core::tauri_commands::save_launcher_configs,
         ])

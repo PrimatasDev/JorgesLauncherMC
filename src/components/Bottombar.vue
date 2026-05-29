@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { onMounted, computed } from "vue";
 import { invoke } from "@tauri-apps/api/core";
 
 import PlayIcon from "../assets/ui_icons/PlayIcon.vue";
@@ -6,10 +7,18 @@ import CogIcon from "../assets/ui_icons/CogIcon.vue";
 import UserIcon from "../assets/ui_icons/UserIcon.vue";
 import FolderIcon from "../assets/ui_icons/FolderIcon.vue";
 
+// Importa o estado reativo e a função de carga
+import { currentConfigs, loadLauncherConfigs } from "../utils/configManager";
+
 const emit = defineEmits<{
   (e: "open-settings"): void;
   (e: "open-accounts"): void;
 }>();
+
+// Cria uma propriedade computada para garantir o fallback "Steve" se estiver vazio
+const displayedUsername = computed(() => {
+  return currentConfigs.value.username.trim() || "Steve";
+});
 
 async function openInstanceFolder() {
   try {
@@ -19,6 +28,11 @@ async function openInstanceFolder() {
     console.log(`Ocorreu um erro: ${error}`);
   }
 }
+
+// Quando a barra inicia, puxamos os dados do Rust pela primeira vez
+onMounted(() => {
+  loadLauncherConfigs();
+});
 </script>
 
 <template>
@@ -36,18 +50,16 @@ async function openInstanceFolder() {
             <UserIcon />
           </div>
           <div class="account-name-area">
-            <span>User</span>
+            <span>{{ displayedUsername }}</span>
           </div>
         </button>
       </nav>
 
       <nav class="controls">
-        <!-- $ ───▶ Jogar ◀────────────────────────────────────── -->
         <button class="generic-btn" title="Configurações">
           <PlayIcon />
         </button>
 
-        <!-- $ ───▶ Open Launcher Folder ◀────────────────────────────────────── -->
         <button
           class="generic-btn"
           title="Configurações"
@@ -56,7 +68,6 @@ async function openInstanceFolder() {
           <FolderIcon />
         </button>
 
-        <!-- $ ───▶ Configurações ◀────────────────────────────────────── -->
         <button
           class="generic-btn"
           @click="emit('open-settings')"
@@ -70,6 +81,7 @@ async function openInstanceFolder() {
 </template>
 
 <style lang="scss" scoped>
+/* Seu SCSS foi mantido 100% idêntico */
 .app-titlebar {
   width: 100%;
   height: 40px;

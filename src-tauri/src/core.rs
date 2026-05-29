@@ -1,6 +1,5 @@
 pub mod configs;
 pub mod dirs;
-pub mod modpack_manager;
 pub mod tauri_commands;
 
 pub use dirs::get_bin_dir;

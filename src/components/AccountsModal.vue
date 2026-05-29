@@ -2,21 +2,16 @@
 import { ref, onMounted, watch } from "vue";
 import CloseIcon from "../assets/ui_icons/CloseIcon.vue";
 import { validateUsername, sanitizeUsernameInput } from "../utils/validators";
-// Importa o gerenciador unificado
-import {
-  loadLauncherConfigs,
-  saveLauncherConfigs,
-} from "../utils/configManager";
+import { currentConfigs, saveLauncherConfigs } from "../utils/configManager";
 
 const props = defineProps<{ isOpen: boolean }>();
 const emit = defineEmits<{ (e: "close"): void }>();
 
 const username = ref("");
 
-//% Busca apenas o que interessa para este modal
-async function loadSavedUsername() {
-  const configs = await loadLauncherConfigs();
-  username.value = configs.username;
+//% Sincroniza o input local com o valor reativo global
+function syncInputWithName() {
+  username.value = currentConfigs.value.username;
 }
 
 function handleInput(event: Event) {
@@ -24,7 +19,6 @@ function handleInput(event: Event) {
   username.value = sanitizeUsernameInput(target.value);
 }
 
-//% Salva o nome de usuário isoladamente de forma segura
 async function saveUsername() {
   if (!validateUsername(username.value)) {
     alert(
@@ -33,7 +27,7 @@ async function saveUsername() {
     return;
   }
 
-  // O configManager vai cuidar de manter a memória atual intacta lá dentro
+  // Ao salvar com sucesso, o estado global muda e a barra atualiza no mesmo milissegundo!
   const success = await saveLauncherConfigs({ username: username.value });
 
   if (success) {
@@ -45,11 +39,11 @@ async function saveUsername() {
 watch(
   () => props.isOpen,
   (isOpenNow) => {
-    if (isOpenNow) loadSavedUsername();
+    if (isOpenNow) syncInputWithName();
   },
 );
 onMounted(() => {
-  if (props.isOpen) loadSavedUsername();
+  if (props.isOpen) syncInputWithName();
 });
 </script>
 
@@ -63,19 +57,19 @@ onMounted(() => {
         </button>
       </div>
       <div class="modal-body">
-        <!-- % Área de conta -->
         <div class="body-section">
-          <!-- ! ADICIONAR CONTA DESCARTADO (POR ENQUANTO) -->
-          <!-- @ <Button class="add-account-btn">Adicionar Conta</Button> -->
-          <!-- <br /> -->
           <div class="section-body">
             <input
+              v-model="username"
               class="username-input"
               type="text"
               placeholder="Nome de usuário"
               maxlength="16"
+              @input="handleInput"
             />
-            <Button class="define-name-btn">Definir</Button>
+            <button class="define-name-btn" @click="saveUsername">
+              Definir
+            </button>
           </div>
         </div>
       </div>
@@ -84,6 +78,7 @@ onMounted(() => {
 </template>
 
 <style lang="scss" scoped>
+/* Mantido o seu SCSS idêntico sem alterações */
 .modal-overlay {
   position: fixed;
   top: 0;
